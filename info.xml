@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<extension key="com.drkhindol.simplenricuen" type="module">
+  <file>simplenricuen</file>
+  <name>Simple NRIC UEN</name>
+  <description>Simple NRIC UEN Field for Profiles</description>
+  <license>AGPL-3.0</license>
+  <maintainer>
+    <author>Dr. Khindol Madraimov</author>
+    <email>khindol.madraimov@gmail.com</email>
+  </maintainer>
+  <urls>
+    <url desc="Main Extension Page">https://drhindol.wordpress.com/</url>
+    <url desc="Documentation">https://drhindol.wordpress.com/</url>
+    <url desc="Support">https://drhindol.wordpress.com/</url>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2022-10-15</releaseDate>
+  <version>0.1.0</version>
+  <develStage>alpha</develStage>
+  <compatibility>
+    <ver>5.0</ver>
+  </compatibility>
+  <comments>This is a new, undeveloped module</comments>
+  <classloader>
+    <psr4 prefix="Civi\" path="Civi"/>
+  </classloader>
+  <civix>
+    <namespace>CRM/Simplenricuen</namespace>
+    <format>22.05.2</format>
+    <angularModule>crmSimplenricuen</angularModule>
+  </civix>
+  <mixins>
+    <mixin>mgd-php@1.0.0</mixin>
+    <mixin>setting-php@1.0.0</mixin>
+    <mixin>menu-xml@1.0.0</mixin>
+  </mixins>
+</extension>
