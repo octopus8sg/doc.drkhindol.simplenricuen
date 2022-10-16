@@ -163,14 +163,12 @@ function simplenricuen_civicrm_pre($op, $objectName, $objectId, &$params)
     }
 //    U::writeLog($params, 'params before');
     if ($objectName === 'Profile') {
-        nricuen_profile($params);
+        set_nricuen_profile($params);
         return;
     }
-    if (!U::getValidateUEN()) {
-        return;
-    }
+
     if ($objectName === 'Individual') {
-        nricuen_individual($params);
+        set_nricuen_contact($params);
     }
 
     ///((S|T)([\d]{2})([A-Z]{2})([\d]{4})([A-Z])|(\d{9})([A-Z]))/g
@@ -179,7 +177,7 @@ function simplenricuen_civicrm_pre($op, $objectName, $objectId, &$params)
 /**
  * @param $params
  */
-function nricuen_individual(&$params): void
+function set_nricuen_contact(&$params): void
 {
 //    U::writeLog('nricuen_individual', 'nricuen_individual start');
 
@@ -193,24 +191,41 @@ function nricuen_individual(&$params): void
         return;
     }
     $external_identifier = $params['external_identifier'];
+    replace_blank_first_last_name($params, $external_identifier);
+    set_nricuen_organization($params, $external_identifier);
+    return;
+}
+
+/**
+ * @param $params
+ * @param $external_identifier
+ */
+function replace_blank_first_last_name(&$params, $external_identifier): void
+{
+    $profield_name = 'first_name';
+    fill_profile_field($params, $profield_name, $external_identifier);
+    $profield_name = 'last_name';
+    fill_profile_field($params, $profield_name, $external_identifier);
+}
+
+/**
+ * @param $params
+ * @param $external_identifier
+ */
+function set_nricuen_organization(&$params, $external_identifier): void
+{
+    if (!U::getValidateUEN()) {
+        return;
+    }
+
     $pattern = "/^((S|T)([\d]{2})([A-Z]{2})([\d]{4})([A-Z])|(\d{9})([A-Z]))$/i";
     $preg_match = preg_match($pattern, $external_identifier); // Outputs 1
 //        U::writeLog($preg_match, 'preg_match');
-    $first_name = CRM_Utils_Array::value('first_name', $params);
-    if (!$first_name) {
-        $params['first_name'] = $external_identifier;
-    }
-    $last_name = CRM_Utils_Array::value('last_name', $params);
-    if (!$last_name) {
-        $params['last_name'] = $external_identifier;
-    }
     if ($preg_match < 1) {
         return;
     }
-    $organization_name = CRM_Utils_Array::value('organization_name', $params);
-    if (!$organization_name) {
-        $params['organization_name'] = $external_identifier;
-    }
+    $profield_name = 'organization_name';
+    fill_profile_field($params, $profield_name, $external_identifier);
     $params['contact_type'] = 'Organization';
 //    U::writeLog($params, 'params after');
 //    U::writeLog('nricuen_individual', 'nricuen_individual end');
@@ -220,16 +235,26 @@ function nricuen_individual(&$params): void
 
 /**
  * @param $params
+ * @param string $profield_name
+ * @param $needed_value
+ * @return mixed
  */
-function nricuen_profile(&$params): void
+function fill_profile_field(&$params, string $profield_name, $needed_value)
+{
+    $profile_field = CRM_Utils_Array::value($profield_name, $params);
+    if (!$profile_field) {
+        $params[$profield_name] = $needed_value;
+    }
+}
+
+/**
+ * @param $params
+ */
+function set_nricuen_profile(&$params): void
 {
 //    U::writeLog('nricuen_profile', 'nricuen_profile start');
-    $entryURLquery = [];
-    $components = parse_url($params['entryURL']);
-    parse_str(html_entity_decode($components['query']), $entryURLquery);
-    $contribution_page_id = $entryURLquery['id'];
+    $contribution_page_id = get_contribution_page_id_for_profile($params);
     $params['contribution_page_id'] = $contribution_page_id;
-    $contribution_page_id = $params['contribution_page_id'];
     if (!U::checkHasNRICUENProfile($contribution_page_id)) {
         return;
     }
@@ -237,7 +262,6 @@ function nricuen_profile(&$params): void
         return;
     }
     $external_identifier = $params['external_identifier'];
-    $params['external_identifier'] = $external_identifier;
     $contact = new CRM_Contact_DAO_Contact();
     $contact->external_identifier = $external_identifier;
     if ($contact->find(TRUE)) {
@@ -253,4 +277,17 @@ function nricuen_profile(&$params): void
 //    U::writeLog('nricuen_profile', 'nricuen_profile end');
 
 
+}
+
+/**
+ * @param $params
+ * @return array
+ */
+function get_contribution_page_id_for_profile($params): array
+{
+    $entryURLquery = [];
+    $components = parse_url($params['entryURL']);
+    parse_str(html_entity_decode($components['query']), $entryURLquery);
+    $contribution_page_id = $entryURLquery['id'];
+    return $contribution_page_id;
 }
