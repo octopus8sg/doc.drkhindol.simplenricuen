@@ -181,7 +181,7 @@ function simplenricuen_civicrm_pre($op, $objectName, $objectId, &$params)
  */
 function nricuen_individual(&$params): void
 {
-    U::writeLog('nricuen_individual', 'nricuen_individual start');
+//    U::writeLog('nricuen_individual', 'nricuen_individual start');
 
     if (!array_key_exists("external_identifier", $params)) {
         return;
@@ -195,7 +195,7 @@ function nricuen_individual(&$params): void
     $external_identifier = $params['external_identifier'];
     $pattern = "/^((S|T)([\d]{2})([A-Z]{2})([\d]{4})([A-Z])|(\d{9})([A-Z]))$/i";
     $preg_match = preg_match($pattern, $external_identifier); // Outputs 1
-        U::writeLog($preg_match, 'preg_match');
+//        U::writeLog($preg_match, 'preg_match');
     $first_name = CRM_Utils_Array::value('first_name', $params);
     if (!$first_name) {
         $params['first_name'] = $external_identifier;
@@ -213,7 +213,7 @@ function nricuen_individual(&$params): void
     }
     $params['contact_type'] = 'Organization';
 //    U::writeLog($params, 'params after');
-    U::writeLog('nricuen_individual', 'nricuen_individual end');
+//    U::writeLog('nricuen_individual', 'nricuen_individual end');
 
     return;
 }
@@ -223,7 +223,7 @@ function nricuen_individual(&$params): void
  */
 function nricuen_profile(&$params): void
 {
-    U::writeLog('nricuen_profile', 'nricuen_profile start');
+//    U::writeLog('nricuen_profile', 'nricuen_profile start');
     $entryURLquery = [];
     $components = parse_url($params['entryURL']);
     parse_str(html_entity_decode($components['query']), $entryURLquery);
@@ -250,7 +250,7 @@ function nricuen_profile(&$params): void
 //        U::writeLog((array)$contact, 'contactNRIC');
     }
     $params['nric'] = true;
-    U::writeLog('nricuen_profile', 'nricuen_profile end');
+//    U::writeLog('nricuen_profile', 'nricuen_profile end');
 
 
 }
