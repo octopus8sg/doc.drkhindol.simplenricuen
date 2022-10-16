@@ -4,7 +4,7 @@ use CRM_Simpleanonymous_ExtensionUtil as E;
 
 use \Firebase\JWT\JWT;
 
-class CRM_Simpleanonymous_Utils
+class CRM_Simplenricuen_Utils
 {
 
 
@@ -12,11 +12,10 @@ class CRM_Simpleanonymous_Utils
      * @param $input
      * @param $preffix_log
      */
-    public static function writeLog($input, $preffix_log = "Simple Anonymous Log")
+    public static function writeLog($input, $preffix_log = "Simple NRICUEN Log")
     {
         try {
-            $simpleanonymous_settings = CRM_Core_BAO_Setting::getItem("Simple Anonymous Settings", 'simpleanonymous_settings');
-            if ($simpleanonymous_settings['save_log'] == '1') {
+            if (self::getSaveLog()) {
                 $masquerade_input = $input;
                 if (is_array($masquerade_input)) {
                     $fields_to_hide = ['Signature'];
@@ -31,8 +30,8 @@ class CRM_Simpleanonymous_Utils
             }
         } catch (\Exception $exception) {
             $error_message = $exception->getMessage();
-            $error_title = 'Anonymous Configuration Required';
-            CRM_Simpleanonymous_Utils::showErrorMessage($error_message, $error_title);
+            $error_title = 'Simple NRICUEN Configuration Required';
+            self::showErrorMessage($error_message, $error_title);
         }
     }
 
@@ -40,106 +39,136 @@ class CRM_Simpleanonymous_Utils
      * @param $contribution_page_id
      * @return bool
      */
-    public static function checkHasAnonymousProfile($contribution_page_id)
+    public static function checkHasNRICUENProfile($contribution_page_id)
     {
+            if(!is_numeric($contribution_page_id)){
+                return FALSE;
+            }
         try {
             $result = FALSE;
-            $profile = self::getAnonymousProfileID();
-            //        CRM_Simpleanonymous_Utils::write_log($params, 'create params');
+            $profiles = self::getNRICUENProfileIDS();
+//            self::writeLog($profiles, 'profiles');
             $ufJoinParams = [
                 'entity_table' => 'civicrm_contribution_page',
-                'uf_group_id' => $profile,
+//                'uf_group_id' => 'IN [1,16]',
                 'entity_id' => $contribution_page_id,
             ];
 
             $ufJoinParams['module'] = 'CiviContribute';
             $ufJoin = new CRM_Core_DAO_UFJoin();
             $ufJoin->copyValues($ufJoinParams);
+            $ufJoin->whereAddIn('uf_group_id', $profiles, 'int');
+//            self::writeLog((array)$ufJoin, 'query');
             $ufJoin->find(TRUE);
             if ($ufJoin->is_active) {
                 $result = TRUE;
             }
-            CRM_Simpleanonymous_Utils::writeLog(strval($result), 'check_if_has_anon_profile');
+//            self::writeLog(strval($result), 'checkHasNRICUENProfile');
             return $result;
         } catch (\Exception $exception) {
             $error_message = $exception->getMessage();
-            $error_title = 'Anonymous Profile Required';
-            CRM_Simpleanonymous_Utils::showErrorMessage($error_message, $error_title);
+            $error_title = 'NRICUEN Profile Required';
+            self::showErrorMessage($error_message, $error_title);
         }
     }
+
 
     /**
      * @return mixed
      */
-
-    public static function getAnonymousUserID()
+    public static function getNRICUENProfileIDS()
     {
 //        $result = FALSE;
         try {
-            $simpleanonymous_settings = CRM_Core_BAO_Setting::getItem("Simple Anonymous Settings", 'simpleanonymous_settings');
-            $result = $simpleanonymous_settings['anonynomous_id'];
-            return $result;
-        } catch (\Exception $exception) {
-            $error_message = $exception->getMessage();
-            $error_title = 'Anonymous User Required';
-            CRM_Simpleanonymous_Utils::showErrorMessage($error_message, $error_title);
-        }
-    }
-
-    /**
-     * @return mixed
-     */
-    public static function getAnonymousProfileID()
-    {
-//        $result = FALSE;
-        try {
-            $simpleanonymous_settings = CRM_Core_BAO_Setting::getItem("Simple Anonymous Settings", 'simpleanonymous_settings');
-            $result = $simpleanonymous_settings['profile'];
+            $simple_settings = CRM_Core_BAO_Setting::getItem("Simple NRICUEN Settings", 'simplenricuen_settings');
+            $aresult = $simple_settings['profiles'];
+            $result = CRM_utils_array::explodePadded($simple_settings['profiles'], ',');
             return $result;
         } catch (\Exception $exception) {
             $error_message = $exception->getMessage();
             $error_title = 'Anonymous Profile Required';
-            CRM_Simpleanonymous_Utils::showErrorMessage($error_message, $error_title);
+            self::showErrorMessage($error_message, $error_title);
+
         }
     }
 
     /**
      * @return bool
      */
-    public static function getHideEmail()
+    public static function isNRICUENProfileID($profile): bool
     {
-        $result = FALSE;
+        $result = false;
         try {
-            $simpleanonymous_settings = CRM_Core_BAO_Setting::getItem("Simple Anonymous Settings", 'simpleanonymous_settings');
-            $result_ = $simpleanonymous_settings['hide_email'];
-            if ($result_ == 1) {
-                $result = TRUE;
-            }
+            $profiles = self::getNRICUENProfileIDS;
+            $result = (bool)in_array($profile, $profiles);
             return $result;
         } catch (\Exception $exception) {
             $error_message = $exception->getMessage();
             $error_title = 'Anonymous Profile Required';
-            CRM_Simpleanonymous_Utils::showErrorMessage($error_message, $error_title);
+            self::showErrorMessage($error_message, $error_title);
+        }
+    }
+
+
+    /**
+     * @return bool
+     */
+    public static function getSaveLog(): bool
+    {
+        $result = false;
+        try {
+            $simple_settings = CRM_Core_BAO_Setting::getItem("Simple NRICUEN Settings", 'simplenricuen_settings');
+            $result_ = $simple_settings['save_log'];
+            if ($result_ == 1) {
+                $result = true;
+            }
+            return $result;
+        } catch (\Exception $exception) {
+            $error_message = $exception->getMessage();
+            $error_title = 'Write Log Config Required';
+            self::showErrorMessage($error_message, $error_title);
         }
     }
 
     /**
      * @return bool
      */
-    public static function getHideProfile()
+    public static function getValidateUEN(): bool
     {
-        $result = FALSE;
+        $result = false;
         try {
-            $simpleanonymous_settings = CRM_Core_BAO_Setting::getItem("Simple Anonymous Settings", 'simpleanonymous_settings');
-            $result_ = $simpleanonymous_settings['hide_profile'];
+            $simple_settings = CRM_Core_BAO_Setting::getItem("Simple NRICUEN Settings", 'simplenricuen_settings');
+            $result_ = $simple_settings['validate_uen'];
+//            self::writeLog($result, 'getValidateUEN');
             if ($result_ == 1) {
-                $result = TRUE;
+                $result = true;
             }
             return $result;
         } catch (\Exception $exception) {
             $error_message = $exception->getMessage();
-            $error_title = 'Anonymous Profile Required';
-            CRM_Simpleanonymous_Utils::showErrorMessage($error_message, $error_title);
+            $error_title = 'Write Log Config Required';
+            self::showErrorMessage($error_message, $error_title);
+        }
+    }
+
+    /**
+     * @return bool
+     */
+    public static function getValidateNRIC(): bool
+    {
+        $result = false;
+        try {
+            $simple_settings = CRM_Core_BAO_Setting::getItem("Simple NRICUEN Settings", 'simplenricuen_settings');
+            $result_ = $simple_settings['validate_nric'];
+//            self::writeLog($result, 'getValidateNRIC');
+            if ($result_ == 1) {
+                $result = true;
+            }
+            return $result;
+        } catch (\Exception $exception) {
+            $error_message = $exception->getMessage();
+            $error_title = 'Write Log Config Required';
+            self::showErrorMessage($error_message, $error_title);
         }
     }
 
@@ -153,6 +182,37 @@ class CRM_Simpleanonymous_Utils
         $userContext = $session->readUserContext();
         CRM_Core_Session::setStatus($error_message, $error_title, 'error');
         CRM_Utils_System::redirect($userContext);
+    }
+
+    public static function getPrimaryEmail($uid)
+    {
+        $primary = '';
+        $emails = CRM_Core_BAO_Email::allEmails($uid);
+        foreach ($emails as $eid => $e) {
+            if ($e['is_primary']) {
+                if ($e['email']) {
+                    $primary = $e['email'];
+                    break;
+                }
+            }
+
+            if (count($emails) == 1) {
+                $primary = $e['email'];
+                break;
+            }
+        }
+        return $primary;
+    }
+
+    /**
+     * @param $form
+     * @param string $element_name
+     */
+    public static function removeRules(&$form, string $element_name): void
+    {
+        $element = $form->getElement($element_name);
+        $form->removeElement($element_name, true);
+        $form->addElement($element);
     }
 
 }

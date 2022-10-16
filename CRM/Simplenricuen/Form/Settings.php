@@ -1,78 +1,101 @@
 <?php
 
 use CRM_Simplenricuen_ExtensionUtil as E;
+use CRM_Simplenricuen_Utils as U;
 
 /**
  * Form controller class
  *
  * @see https://docs.civicrm.org/dev/en/latest/framework/quickform/
  */
-class CRM_Simplenricuen_Form_Settings extends CRM_Core_Form {
-  public function buildQuickForm() {
+class CRM_Simplenricuen_Form_Settings extends CRM_Core_Form
+{
+    protected $_userContext;
 
-    // add form elements
-    $this->add(
-      'select', // field type
-      'favorite_color', // field name
-      'Favorite Color', // field label
-      $this->getColorOptions(), // list of options
-      TRUE // is required
-    );
-    $this->addButtons(array(
-      array(
-        'type' => 'submit',
-        'name' => E::ts('Submit'),
-        'isDefault' => TRUE,
-      ),
-    ));
+    public function buildQuickForm()
+    {
+        $save_log = $this->add('checkbox', 'save_log', 'Save extension debug to log');
+        $validate_uen = $this->add('checkbox', 'validate_uen', 'Validate UEN (create Org Contact if input matches UEN)');
+        $validate_nric = $this->add('checkbox', 'validate_nric', 'Validate NRIC (create Ind Contact if input matches NRIC)');
+//        $anonynomous_email = $this->add('email', 'anonynomous_email', 'Anonynomous Email', ['size' => 100]);
 
-    // export form elements
-    $this->assign('elementNames', $this->getRenderableElementNames());
-    parent::buildQuickForm();
-  }
+        $types = ['Contact'];
+        $all_profiles = CRM_Core_BAO_UFGroup::getValidProfiles($types);
+        if (empty($all_profiles)) {
+            $error_message = "You will need to create a Profile for Simple NRIC/UEN Field. Navigate to Administer CiviCRM > Customize Data and Screens > CiviCRM Profile to configure a Profile. Consult the online Administrator documentation for more information.";
+            $error_title = 'Profile Required';
+            U::showErrorMessage($error_message, $error_title);
+        }
+//        U::writeLog($all_profiles, 'All Profiles', );
+        $new_profiles = [];
+        foreach ($all_profiles as $key => $profile) {
+            $new_profiles[] = ['id' => $key, 'text' => $profile, 'description' => $profile];
+        }
+//        U::writeLog($new_profiles, 'New Profiles', );
+        $profiles = $this->add('select2', 'profiles', ts('Select Profiles'), $new_profiles, TRUE,
+            ['placeholder' => ts('Select Profiles'), 'class' => 'huge', 'multiple' => 'multiple']
+        );
 
-  public function postProcess() {
-    $values = $this->exportValues();
-    $options = $this->getColorOptions();
-    CRM_Core_Session::setStatus(E::ts('You picked color "%1"', array(
-      1 => $options[$values['favorite_color']],
-    )));
-    parent::postProcess();
-  }
-
-  public function getColorOptions() {
-    $options = array(
-      '' => E::ts('- select -'),
-      '#f00' => E::ts('Red'),
-      '#0f0' => E::ts('Green'),
-      '#00f' => E::ts('Blue'),
-      '#f0f' => E::ts('Purple'),
-    );
-    foreach (array('1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e') as $f) {
-      $options["#{$f}{$f}{$f}"] = E::ts('Grey (%1)', array(1 => $f));
+        $this->addButtons([
+            [
+                'type' => 'submit',
+                'name' => E::ts('Submit'),
+                'isDefault' => TRUE,
+            ],
+        ]);
+        $this->assign('elementNames', $this->getRenderableElementNames());
+        parent::buildQuickForm();
     }
-    return $options;
-  }
 
-  /**
-   * Get the fields/elements defined in this form.
-   *
-   * @return array (string)
-   */
-  public function getRenderableElementNames() {
-    // The _elements list includes some items which should not be
-    // auto-rendered in the loop -- such as "qfKey" and "buttons".  These
-    // items don't have labels.  We'll identify renderable by filtering on
-    // the 'label'.
-    $elementNames = array();
-    foreach ($this->_elements as $element) {
-      /** @var HTML_QuickForm_Element $element */
-      $label = $element->getLabel();
-      if (!empty($label)) {
-        $elementNames[] = $element->getName();
-      }
+    public function setDefaultValues()
+    {
+        $defaults = [];
+        $simple_settings = CRM_Core_BAO_Setting::getItem("Simple NRICUEN Settings", 'simplenricuen_settings');
+        if (!empty($simple_settings)) {
+            $defaults = $simple_settings;
+//            $defaults['profiles'] = "";
+        }
+        return $defaults;
     }
-    return $elementNames;
-  }
+
+    public function postProcess()
+    {
+
+        $values = $this->exportValues();
+        $simple_settings = [];
+        $simple_settings['save_log'] = $values['save_log'];
+        $simple_settings['validate_uen'] = $values['validate_uen'];
+        $simple_settings['validate_nric'] = $values['validate_nric'];
+        $simple_settings['profiles'] = $values['profiles'];
+
+
+        CRM_Core_BAO_Setting::setItem($simple_settings, "Simple NRICUEN Settings", 'simplenricuen_settings');
+        CRM_Core_Session::setStatus(E::ts('Simple NRIC/UEN Settings Saved', ['domain' => 'com.drkhindol.simplenricuen']), 'Configuration Updated', 'success');
+
+        parent::postProcess();
+    }
+
+    /**
+     * Get the fields/elements defined in this form.
+     *
+     * @return array (string)
+     */
+    public function getRenderableElementNames()
+    {
+        // The _elements list includes some items which should not be
+        // auto-rendered in the loop -- such as "qfKey" and "buttons".  These
+        // items don't have labels.  We'll identify renderable by filtering on
+        // the 'label'.
+        $elementNames = array();
+        foreach ($this->_elements as $element) {
+            /** @var HTML_QuickForm_Element $element */
+            $label = $element->getLabel();
+            if (!empty($label)) {
+                $elementNames[] = $element->getName();
+            }
+        }
+        return $elementNames;
+    }
+
 
 }
