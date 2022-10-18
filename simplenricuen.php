@@ -138,7 +138,7 @@ function simplenricuen_civicrm_buildForm($formName, &$form)
     CRM_Core_Resources::singleton()->addVars(
         'SimpleNRICUEN', [
         'testUEN' => U::checkHasUENProfile($contribution_page_id),
-        'testNRIC' => U::checkHasNRICUENProfile($contribution_page_id)
+        'testNRIC' => U::checkHasNRICProfile($contribution_page_id)
     ]);
 
 }
