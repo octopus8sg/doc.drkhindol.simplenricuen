@@ -1,5 +1,6 @@
 <?php
 use CRM_Simplenricuen_ExtensionUtil as E;
+use CRM_Simplenricuen_Utils as U;
 
 /**
  * Collection of upgrade steps.
@@ -41,15 +42,18 @@ class CRM_Simplenricuen_Upgrader extends CRM_Simplenricuen_Upgrader_Base {
   //  $this->executeSqlFile('sql/myuninstall.sql');
   // }
 
-  /**
+
+    /**
    * Example: Run a simple query when a module is enabled.
    */
    public function enable() {
        $simple_settings = [];
-       $simple_settings['save_log'] = 1;
-       $simple_settings['validate_uen'] = 1;
-       $simple_settings['validate_nric'] = 1;
-       $simple_settings['profiles'] = "";
+       $simple_settings[U::SAVE_LOG] = 1;
+       $simple_settings[U::VALIDATE_UEN] = 1;
+       $simple_settings[U::VALIDATE_NRICIDATE_N] = 1;
+       $simple_settings[U::PROFILES] = "";
+       $simple_settings[U::NRIC_PROFILES] = "";
+       $simple_settings[U::UEN_PROFILES] = "";
 
        CRM_Core_BAO_Setting::setItem($simple_settings, "Simple NRICUEN Settings", 'simplenricuen_settings');
    }

@@ -14,9 +14,9 @@ class CRM_Simplenricuen_Form_Settings extends CRM_Core_Form
 
     public function buildQuickForm()
     {
-        $save_log = $this->add('checkbox', 'save_log', 'Save extension debug to log');
-        $validate_uen = $this->add('checkbox', 'validate_uen', 'Validate UEN (create Org Contact if input matches UEN)');
-        $validate_nric = $this->add('checkbox', 'validate_nric', 'Validate NRIC (create Ind Contact if input matches NRIC)');
+        $save_log = $this->add('checkbox', U::SAVE_LOG, 'Save extension debug to log');
+//        $validate_uen = $this->add('checkbox', 'validate_uen', 'Validate UEN (create Org Contact if input matches UEN)');
+//        $validate_nric = $this->add('checkbox', 'validate_nric', 'Validate NRIC (create Ind Contact if input matches NRIC)');
 //        $anonynomous_email = $this->add('email', 'anonynomous_email', 'Anonynomous Email', ['size' => 100]);
 
         $types = ['Contact'];
@@ -32,7 +32,15 @@ class CRM_Simplenricuen_Form_Settings extends CRM_Core_Form
             $new_profiles[] = ['id' => $key, 'text' => $profile, 'description' => $profile];
         }
 //        U::writeLog($new_profiles, 'New Profiles', );
-        $profiles = $this->add('select2', 'profiles', ts('Select Profiles'), $new_profiles, TRUE,
+        $profiles = $this->add('select2', U::PROFILES, ts('Profiles To Apply'), $new_profiles, TRUE,
+            ['placeholder' => ts('Select Profiles'), 'class' => 'huge', 'multiple' => 'multiple']
+        );
+
+        $nric_profiles = $this->add('select2', U::NRIC_PROFILES, ts('Profiles To Validate NRIC'), $new_profiles, TRUE,
+            ['placeholder' => ts('Select Profiles'), 'class' => 'huge', 'multiple' => 'multiple']
+        );
+
+        $uen_profiles = $this->add('select2', U::UEN_PROFILES, ts('Profiles To Validate UEN'), $new_profiles, TRUE,
             ['placeholder' => ts('Select Profiles'), 'class' => 'huge', 'multiple' => 'multiple']
         );
 
@@ -63,10 +71,12 @@ class CRM_Simplenricuen_Form_Settings extends CRM_Core_Form
 
         $values = $this->exportValues();
         $simple_settings = [];
-        $simple_settings['save_log'] = $values['save_log'];
-        $simple_settings['validate_uen'] = $values['validate_uen'];
-        $simple_settings['validate_nric'] = $values['validate_nric'];
-        $simple_settings['profiles'] = $values['profiles'];
+        $simple_settings[U::SAVE_LOG] = $values[U::SAVE_LOG];
+//        $simple_settings['validate_uen'] = $values['validate_uen'];
+//        $simple_settings['validate_nric'] = $values['validate_nric'];
+        $simple_settings[U::PROFILES] = $values[U::PROFILES];
+        $simple_settings[U::NRIC_PROFILES] = $values[U::NRIC_PROFILES];
+        $simple_settings[U::UEN_PROFILES] = $values[U::UEN_PROFILES];
 
 
         CRM_Core_BAO_Setting::setItem($simple_settings, "Simple NRICUEN Settings", 'simplenricuen_settings');

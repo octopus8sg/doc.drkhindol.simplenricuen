@@ -128,18 +128,18 @@ function simplenricuen_civicrm_buildForm($formName, &$form)
     }
     $form_array = (Array)$form;
     $contribution_page_id = CRM_Utils_Array::value('_id', $form_array);
-    $is_needed_profile = U::checkHasNRICUENProfile($contribution_page_id);
-    if ($is_needed_profile) {
-        $element_name = 'external_identifier';
-        CRM_Simplenricuen_Utils::removeRules($form, $element_name);
-        CRM_Core_Region::instance('contribution-main-not-you-block')->add(
-            ['template' => 'CRM/Simplenricuen/Form/NRICUEN.tpl', 'weight' => +11]);
-        CRM_Core_Resources::singleton()->addVars(
-            'SimpleNRICUEN', [
-            'testUEN' => U::getValidateUEN(),
-            'testNRIC' => U::getValidateNRIC()
-        ]);
+    if (!U::checkHasNRICUENProfile($contribution_page_id)) {
+        return;
     }
+    $element_name = 'external_identifier';
+    U::removeRules($form, $element_name);
+    CRM_Core_Region::instance('contribution-main-not-you-block')->add(
+        ['template' => 'CRM/Simplenricuen/Form/NRICUEN.tpl', 'weight' => +11]);
+    CRM_Core_Resources::singleton()->addVars(
+        'SimpleNRICUEN', [
+        'testUEN' => U::checkHasUENProfile($contribution_page_id),
+        'testNRIC' => U::checkHasNRICUENProfile($contribution_page_id)
+    ]);
 
 }
 
@@ -192,6 +192,9 @@ function set_nricuen_contact(&$params): void
     }
     $external_identifier = $params['external_identifier'];
     replace_blank_first_last_name($params, $external_identifier);
+    if (!array_key_exists("uen", $params)) {
+        return;
+    }
     set_nricuen_organization($params, $external_identifier);
     return;
 }
@@ -214,10 +217,6 @@ function replace_blank_first_last_name(&$params, $external_identifier): void
  */
 function set_nricuen_organization(&$params, $external_identifier): void
 {
-    if (!U::getValidateUEN()) {
-        return;
-    }
-
     $pattern = "/^((S|T)([\d]{2})([A-Z]{2})([\d]{4})([A-Z])|(\d{9})([A-Z]))$/i";
     $preg_match = preg_match($pattern, $external_identifier); // Outputs 1
 //        U::writeLog($preg_match, 'preg_match');
@@ -274,6 +273,9 @@ function set_nricuen_profile(&$params): void
 //        U::writeLog((array)$contact, 'contactNRIC');
     }
     $params['nric'] = true;
+    if (U::checkHasUENProfile($contribution_page_id)) {
+        $params['uen'] = true;
+    }
 //    U::writeLog('nricuen_profile', 'nricuen_profile end');
 
 

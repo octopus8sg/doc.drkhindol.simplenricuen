@@ -6,7 +6,12 @@ use \Firebase\JWT\JWT;
 
 class CRM_Simplenricuen_Utils
 {
-
+    public const NRIC_PROFILES = 'nric_profiles';
+    public const UEN_PROFILES = 'uen_profiles';
+    public const PROFILES = 'profiles';
+    public const SAVE_LOG = 'save_log';
+    public const VALIDATE_UEN = 'validate_uen';
+    public const VALIDATE_NRIC = 'validate_nric';
 
     /**
      * @param $input
@@ -41,12 +46,86 @@ class CRM_Simplenricuen_Utils
      */
     public static function checkHasNRICUENProfile($contribution_page_id)
     {
-            if(!is_numeric($contribution_page_id)){
-                return FALSE;
-            }
+        if (!is_numeric($contribution_page_id)) {
+            return FALSE;
+        }
         try {
             $result = FALSE;
             $profiles = self::getNRICUENProfileIDS();
+//            self::writeLog($profiles, 'profiles');
+            $ufJoinParams = [
+                'entity_table' => 'civicrm_contribution_page',
+//                'uf_group_id' => 'IN [1,16]',
+                'entity_id' => $contribution_page_id,
+            ];
+
+            $ufJoinParams['module'] = 'CiviContribute';
+            $ufJoin = new CRM_Core_DAO_UFJoin();
+            $ufJoin->copyValues($ufJoinParams);
+            $ufJoin->whereAddIn('uf_group_id', $profiles, 'int');
+//            self::writeLog((array)$ufJoin, 'query');
+            $ufJoin->find(TRUE);
+            if ($ufJoin->is_active) {
+                $result = TRUE;
+            }
+//            self::writeLog(strval($result), 'checkHasNRICUENProfile');
+            return $result;
+        } catch (\Exception $exception) {
+            $error_message = $exception->getMessage();
+            $error_title = 'NRICUEN Profile Required';
+            self::showErrorMessage($error_message, $error_title);
+        }
+    }
+
+    /**
+     * @param $contribution_page_id
+     * @return bool
+     */
+    public static function checkHasUENProfile($contribution_page_id)
+    {
+        if (!is_numeric($contribution_page_id)) {
+            return FALSE;
+        }
+        try {
+            $result = FALSE;
+            $profiles = self::getUENProfileIDS();
+//            self::writeLog($profiles, 'profiles');
+            $ufJoinParams = [
+                'entity_table' => 'civicrm_contribution_page',
+//                'uf_group_id' => 'IN [1,16]',
+                'entity_id' => $contribution_page_id,
+            ];
+
+            $ufJoinParams['module'] = 'CiviContribute';
+            $ufJoin = new CRM_Core_DAO_UFJoin();
+            $ufJoin->copyValues($ufJoinParams);
+            $ufJoin->whereAddIn('uf_group_id', $profiles, 'int');
+//            self::writeLog((array)$ufJoin, 'query');
+            $ufJoin->find(TRUE);
+            if ($ufJoin->is_active) {
+                $result = TRUE;
+            }
+//            self::writeLog(strval($result), 'checkHasNRICUENProfile');
+            return $result;
+        } catch (\Exception $exception) {
+            $error_message = $exception->getMessage();
+            $error_title = 'NRICUEN Profile Required';
+            self::showErrorMessage($error_message, $error_title);
+        }
+    }
+
+    /**
+     * @param $contribution_page_id
+     * @return bool
+     */
+    public static function checkHasNRICProfile($contribution_page_id)
+    {
+        if (!is_numeric($contribution_page_id)) {
+            return FALSE;
+        }
+        try {
+            $result = FALSE;
+            $profiles = self::getNRICProfileIDS();
 //            self::writeLog($profiles, 'profiles');
             $ufJoinParams = [
                 'entity_table' => 'civicrm_contribution_page',
@@ -81,7 +160,7 @@ class CRM_Simplenricuen_Utils
 //        $result = FALSE;
         try {
             $simple_settings = CRM_Core_BAO_Setting::getItem("Simple NRICUEN Settings", 'simplenricuen_settings');
-            $aresult = $simple_settings['profiles'];
+            $aresult = $simple_settings[self::PROFILES];
             $result = CRM_utils_array::explodePadded($simple_settings['profiles'], ',');
             return $result;
         } catch (\Exception $exception) {
@@ -93,19 +172,40 @@ class CRM_Simplenricuen_Utils
     }
 
     /**
-     * @return bool
+     * @return mixed
      */
-    public static function isNRICUENProfileID($profile): bool
+    public static function getUENProfileIDS()
     {
-        $result = false;
+//        $result = FALSE;
         try {
-            $profiles = self::getNRICUENProfileIDS;
-            $result = (bool)in_array($profile, $profiles);
+            $simple_settings = CRM_Core_BAO_Setting::getItem("Simple NRICUEN Settings", 'simplenricuen_settings');
+            $aresult = $simple_settings[self::UEN_PROFILES];
+            $result = CRM_utils_array::explodePadded($simple_settings['profiles'], ',');
             return $result;
         } catch (\Exception $exception) {
             $error_message = $exception->getMessage();
             $error_title = 'Anonymous Profile Required';
             self::showErrorMessage($error_message, $error_title);
+
+        }
+    }
+
+    /**
+     * @return mixed
+     */
+    public static function getNRICProfileIDS()
+    {
+//        $result = FALSE;
+        try {
+            $simple_settings = CRM_Core_BAO_Setting::getItem("Simple NRICUEN Settings", 'simplenricuen_settings');
+            $aresult = $simple_settings[self::NRIC_PROFILES];
+            $result = CRM_utils_array::explodePadded($simple_settings['profiles'], ',');
+            return $result;
+        } catch (\Exception $exception) {
+            $error_message = $exception->getMessage();
+            $error_title = 'Anonymous Profile Required';
+            self::showErrorMessage($error_message, $error_title);
+
         }
     }
 
@@ -118,7 +218,7 @@ class CRM_Simplenricuen_Utils
         $result = false;
         try {
             $simple_settings = CRM_Core_BAO_Setting::getItem("Simple NRICUEN Settings", 'simplenricuen_settings');
-            $result_ = $simple_settings['save_log'];
+            $result_ = $simple_settings[self::SAVE_LOG];
             if ($result_ == 1) {
                 $result = true;
             }
@@ -138,7 +238,7 @@ class CRM_Simplenricuen_Utils
         $result = false;
         try {
             $simple_settings = CRM_Core_BAO_Setting::getItem("Simple NRICUEN Settings", 'simplenricuen_settings');
-            $result_ = $simple_settings['validate_uen'];
+            $result_ = $simple_settings[self::VALIDATE_UEN];
 //            self::writeLog($result, 'getValidateUEN');
             if ($result_ == 1) {
                 $result = true;
@@ -159,7 +259,7 @@ class CRM_Simplenricuen_Utils
         $result = false;
         try {
             $simple_settings = CRM_Core_BAO_Setting::getItem("Simple NRICUEN Settings", 'simplenricuen_settings');
-            $result_ = $simple_settings['validate_nric'];
+            $result_ = $simple_settings[self::VALIDATE_NRIC];
 //            self::writeLog($result, 'getValidateNRIC');
             if ($result_ == 1) {
                 $result = true;
