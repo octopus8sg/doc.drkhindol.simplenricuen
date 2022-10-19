@@ -161,7 +161,7 @@ class CRM_Simplenricuen_Utils
         try {
             $simple_settings = CRM_Core_BAO_Setting::getItem("Simple NRICUEN Settings", 'simplenricuen_settings');
             $aresult = $simple_settings[self::PROFILES];
-            $result = CRM_utils_array::explodePadded($simple_settings['profiles'], ',');
+            $result = CRM_utils_array::explodePadded($aresult, ',');
             return $result;
         } catch (\Exception $exception) {
             $error_message = $exception->getMessage();

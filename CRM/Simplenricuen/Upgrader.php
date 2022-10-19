@@ -49,8 +49,8 @@ class CRM_Simplenricuen_Upgrader extends CRM_Simplenricuen_Upgrader_Base {
    public function enable() {
        $simple_settings = [];
        $simple_settings[U::SAVE_LOG] = 1;
-       $simple_settings[U::VALIDATE_UEN] = 1;
-       $simple_settings[U::VALIDATE_NRICIDATE_N] = 1;
+//       $simple_settings[U::VALIDATE_UEN] = 1;
+//       $simple_settings[U::VALIDATE_NRICIDATE_N] = 1;
        $simple_settings[U::PROFILES] = "";
        $simple_settings[U::NRIC_PROFILES] = "";
        $simple_settings[U::UEN_PROFILES] = "";
