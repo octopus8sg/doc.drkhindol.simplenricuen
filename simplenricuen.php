@@ -128,7 +128,17 @@ function simplenricuen_civicrm_buildForm($formName, &$form)
     }
     $form_array = (Array)$form;
     $contribution_page_id = CRM_Utils_Array::value('_id', $form_array);
-    if (!U::checkHasNRICUENProfile($contribution_page_id)) {
+    $tocheck = FALSE;
+    if (U::checkHasNRICUENProfile($contribution_page_id)) {
+        $tocheck = TRUE;
+    }
+    if (U::checkHasNRICProfile($contribution_page_id)) {
+        $tocheck = TRUE;
+    }
+    if (U::checkHasUENProfile($contribution_page_id)) {
+        $tocheck = TRUE;
+    }
+    if(!$tocheck){
         return;
     }
     $element_name = 'external_identifier';
@@ -254,7 +264,17 @@ function set_nricuen_profile(&$params): void
 //    U::writeLog('nricuen_profile', 'nricuen_profile start');
     $contribution_page_id = get_contribution_page_id_for_profile($params);
     $params['contribution_page_id'] = $contribution_page_id;
-    if (!U::checkHasNRICUENProfile($contribution_page_id)) {
+    $tocheck = FALSE;
+    if (U::checkHasNRICUENProfile($contribution_page_id)) {
+        $tocheck = TRUE;
+    }
+    if (U::checkHasNRICProfile($contribution_page_id)) {
+        $tocheck = TRUE;
+    }
+    if (U::checkHasUENProfile($contribution_page_id)) {
+        $tocheck = TRUE;
+    }
+    if(!$tocheck){
         return;
     }
     if (!array_key_exists("external_identifier", $params)) {

@@ -32,15 +32,27 @@ class CRM_Simplenricuen_Form_Settings extends CRM_Core_Form
             $new_profiles[] = ['id' => $key, 'text' => $profile, 'description' => $profile];
         }
 //        U::writeLog($new_profiles, 'New Profiles', );
-        $profiles = $this->add('select2', U::PROFILES, ts('Profiles To Apply'), $new_profiles, TRUE,
+
+        $profiles = $this->add('select2', U::PROFILES, ts('Profiles To Apply'), $new_profiles, FALSE,
             ['placeholder' => ts('Select Profiles'), 'class' => 'huge', 'multiple' => 'multiple']
         );
+//        $types = ['Individual'];
+//        $all_profiles = CRM_Core_BAO_UFGroup::getValidProfiles($types);
+//        $new_profiles = [];
+//        foreach ($all_profiles as $key => $profile) {
+//            $new_profiles[] = ['id' => $key, 'text' => $profile, 'description' => $profile];
+//        }
 
-        $nric_profiles = $this->add('select2', U::NRIC_PROFILES, ts('Profiles To Validate NRIC'), $new_profiles, TRUE,
+        $nric_profiles = $this->add('select2', U::NRIC_PROFILES, ts('Profiles To Validate NRIC'), $new_profiles, FALSE,
             ['placeholder' => ts('Select Profiles'), 'class' => 'huge', 'multiple' => 'multiple']
         );
-
-        $uen_profiles = $this->add('select2', U::UEN_PROFILES, ts('Profiles To Validate UEN'), $new_profiles, TRUE,
+//        $types = ['Organization'];
+//        $all_profiles = CRM_Core_BAO_UFGroup::getValidProfiles($types);
+//        $new_profiles = [];
+//        foreach ($all_profiles as $key => $profile) {
+//            $new_profiles[] = ['id' => $key, 'text' => $profile, 'description' => $profile];
+//        }
+        $uen_profiles = $this->add('select2', U::UEN_PROFILES, ts('Profiles To Validate UEN'), $new_profiles, FALSE,
             ['placeholder' => ts('Select Profiles'), 'class' => 'huge', 'multiple' => 'multiple']
         );
 
