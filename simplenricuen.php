@@ -138,10 +138,12 @@ function simplenricuen_civicrm_buildForm($formName, &$form)
     if (U::checkHasUENProfile($contribution_page_id)) {
         $tocheck = TRUE;
     }
-    if(!$tocheck){
+    if (!$tocheck) {
         return;
     }
     $element_name = 'external_identifier';
+    U::removeRules($form, $element_name);
+    $element_name = 'onbehalf_external_identifier';
     U::removeRules($form, $element_name);
     CRM_Core_Region::instance('contribution-main-not-you-block')->add(
         ['template' => 'CRM/Simplenricuen/Form/NRICUEN.tpl', 'weight' => +11]);
@@ -201,6 +203,8 @@ function set_nricuen_contact(&$params): void
         return;
     }
     $external_identifier = $params['external_identifier'];
+    replace_blank_first_last_name($params, $external_identifier);
+    $external_identifier = $params['onbehalf_external_identifier'];
     replace_blank_first_last_name($params, $external_identifier);
     if (!array_key_exists("uen", $params)) {
         return;
@@ -274,7 +278,7 @@ function set_nricuen_profile(&$params): void
     if (U::checkHasUENProfile($contribution_page_id)) {
         $tocheck = TRUE;
     }
-    if(!$tocheck){
+    if (!$tocheck) {
         return;
     }
     if (!array_key_exists("external_identifier", $params)) {
@@ -296,6 +300,24 @@ function set_nricuen_profile(&$params): void
     if (U::checkHasUENProfile($contribution_page_id)) {
         $params['uen'] = true;
     }
+    $external_identifier = $params['onbehalf_external_identifier'];
+    if ($external_identifier) {
+        $contact = new CRM_Contact_DAO_Contact();
+        $contact->external_identifier = $external_identifier;
+        if ($contact->find(TRUE)) {
+            $contact_id = $contact->id;
+            $params['contactID'] = $contact_id;
+            $params['contact_id'] = $contact_id;
+            $primary_email = U::getPrimaryEmail($contact_id);
+            $params['email-Primary-1'] = $primary_email;
+            $params['email-Primary'] = $primary_email;
+//        U::writeLog((array)$contact, 'contactNRIC');
+        }
+        $params['nric'] = true;
+        if (U::checkHasUENProfile($contribution_page_id)) {
+            $params['uen'] = true;
+        }
+    }
 //    U::writeLog('nricuen_profile', 'nricuen_profile end');
 
 
@@ -311,6 +333,6 @@ function get_contribution_page_id_for_profile($params): int
     $entryURLquery = [];
     $components = parse_url($params['entryURL']);
     parse_str(html_entity_decode($components['query']), $entryURLquery);
-    $contribution_page_id = intval ($entryURLquery['id']);
+    $contribution_page_id = intval($entryURLquery['id']);
     return $contribution_page_id;
 }
