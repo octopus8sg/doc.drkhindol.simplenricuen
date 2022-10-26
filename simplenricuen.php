@@ -121,7 +121,7 @@ function simplenricuen_civicrm_navigationMenu(&$menu)
 
 function simplenricuen_civicrm_buildForm($formName, &$form)
 {
-//    U::writeLog($formName, 'form name');
+    U::writeLog($formName, 'form name');
 //    U::writeLog((Array)$form, 'form form');
     if ($formName !== 'CRM_Contribute_Form_Contribution_Main') {
         return;
@@ -143,7 +143,9 @@ function simplenricuen_civicrm_buildForm($formName, &$form)
     }
     $element_name = 'external_identifier';
     U::removeRules($form, $element_name);
-    $element_name = 'onbehalf_external_identifier';
+//    $element_name = 'onbehalf_external_identifier';
+//    U::removeRules($form, $element_name);
+    $element_name = 'onbehalf[external_identifier]';
     U::removeRules($form, $element_name);
     CRM_Core_Region::instance('contribution-main-not-you-block')->add(
         ['template' => 'CRM/Simplenricuen/Form/NRICUEN.tpl', 'weight' => +11]);
@@ -329,7 +331,7 @@ function set_nricuen_profile(&$params): void
  */
 function get_contribution_page_id_for_profile($params): int
 {
-    U::writeLog($params, 'get_contribution_page_id_for_profile');
+//    U::writeLog($params, 'get_contribution_page_id_for_profile');
     $entryURLquery = [];
     $components = parse_url($params['entryURL']);
     parse_str(html_entity_decode($components['query']), $entryURLquery);

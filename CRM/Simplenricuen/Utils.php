@@ -310,9 +310,15 @@ class CRM_Simplenricuen_Utils
      */
     public static function removeRules(&$form, string $element_name): void
     {
+        try{
         $element = $form->getElement($element_name);
-        $form->removeElement($element_name, true);
-        $form->addElement($element);
+        if ($element) {
+            $form->removeElement($element_name, true);
+            $form->addElement($element);
+        }
+        }catch (\Exception $e){
+            self::writeLog($e->getMessage(), 'removeRules');
+        }
     }
 
 }
