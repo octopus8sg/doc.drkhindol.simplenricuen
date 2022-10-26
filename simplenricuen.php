@@ -168,7 +168,7 @@ function simplenricuen_civicrm_pre($op, $objectName, $objectId, &$params)
     if ($op !== 'create') {
         return;
     }
-    if ($objectName !== 'Profile' && $objectName !== 'Individual') {
+    if ($objectName !== 'Profile' && $objectName !== 'Individual' && $objectName !== 'Organization') {
         return;
     }
 //    U::writeLog($params, 'params before');
@@ -177,7 +177,7 @@ function simplenricuen_civicrm_pre($op, $objectName, $objectId, &$params)
         return;
     }
 
-    if ($objectName === 'Individual') {
+    if ($objectName === 'Individual' || $objectName === 'Organization') {
         set_nricuen_contact($params);
     }
 
