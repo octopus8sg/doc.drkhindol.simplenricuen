@@ -98,6 +98,56 @@
                 alert(is_valid_nric ? "Valid NRIC" : "Not Valid NRIC");
             }
         });
+        $('#onbehalf_external_identifier').on('change', function (event, data) {
+
+            const external_identifier = $(this).val();
+            if (!external_identifier) {
+                return;
+            }
+            if (0 === external_identifier.length) {
+                return;
+            }
+            if (!this.value) {
+                return;
+            }
+
+            const is_valid_nric = nricValidator(external_identifier);
+            const is_valid_uen = uenValidator(external_identifier);
+            // console.log(external_identifier);
+            const testUEN = CRM.vars.SimpleNRICUEN.testUEN;
+            const testNRIC = CRM.vars.SimpleNRICUEN.testNRIC;
+            if (testUEN) {
+                alert(is_valid_uen ? "Valid UEN" : "Not Valid UEN");
+            }
+            if (testNRIC) {
+                alert(is_valid_nric ? "Valid NRIC" : "Not Valid NRIC");
+            }
+        });
+        $('#onbehalf[external_identifier]').on('change', function (event, data) {
+
+            const external_identifier = $(this).val();
+            if (!external_identifier) {
+                return;
+            }
+            if (0 === external_identifier.length) {
+                return;
+            }
+            if (!this.value) {
+                return;
+            }
+
+            const is_valid_nric = nricValidator(external_identifier);
+            const is_valid_uen = uenValidator(external_identifier);
+            // console.log(external_identifier);
+            const testUEN = CRM.vars.SimpleNRICUEN.testUEN;
+            const testNRIC = CRM.vars.SimpleNRICUEN.testNRIC;
+            if (testUEN) {
+                alert(is_valid_uen ? "Valid UEN" : "Not Valid UEN");
+            }
+            if (testNRIC) {
+                alert(is_valid_nric ? "Valid NRIC" : "Not Valid NRIC");
+            }
+        });
 
     });
 
