@@ -303,13 +303,14 @@ function set_nricuen_profile(&$params): void
 
 /**
  * @param $params
- * @return array
+ * @return int
  */
-function get_contribution_page_id_for_profile($params): array
+function get_contribution_page_id_for_profile($params): int
 {
+    U::writeLog($params, 'get_contribution_page_id_for_profile');
     $entryURLquery = [];
     $components = parse_url($params['entryURL']);
     parse_str(html_entity_decode($components['query']), $entryURLquery);
-    $contribution_page_id = $entryURLquery['id'];
+    $contribution_page_id = intval ($entryURLquery['id']);
     return $contribution_page_id;
 }
