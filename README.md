@@ -2,7 +2,7 @@
 
 ![Screenshot](/images/screenshot.png)
 
-(*FIXME: In one or two paragraphs, describe what the extension does and why one would download it. *)
+This extension changes the behaviour of the External Identificator Field in Profiles.
 
 The extension is licensed under [AGPL-3.0](LICENSE.txt).
 
